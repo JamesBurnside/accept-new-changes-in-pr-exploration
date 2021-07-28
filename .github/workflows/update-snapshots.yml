@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  # Run any time any issue has a new comment on (this includes PRs)
+  issue_comment:
+    types: [created]
+
+jobs:
+  pr_commented:
+    name: PR comment
+    # This job will only run if the comment matches "update snapshots"
+    if: ${{ github.event.comment == 'update snapshots'}}
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE so job can access it
+      - uses: actions/checkout@v2
+      # Ensure node is installed on the test runner
+      - name: Install Node.js
+        uses: actions/setup-node@v1
+      # Install test run dependencies
+      - name: Install dependencies
+        run: npm run install
+      # Update the jest snapshots
+      - name: Update snapshots
+        run: npm run update-snapshots
+      # Commit changes to snapshot files.
+      - name: Commit new snapshots
+        run: |
+          git add *.snap
+          git commit -m 'Updating jest snapshots
+          git push
