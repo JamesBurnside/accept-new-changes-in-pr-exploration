@@ -1,4 +1,4 @@
-name: CI
+name: Update snapshots
 
 on:
   # Run any time any issue has a new comment on (this includes PRs)
@@ -9,11 +9,26 @@ jobs:
   pr_commented:
     name: PR comment
     # This job will only run if the comment matches "update snapshots"
-    if: ${{ github.event.comment == 'update snapshots'}}
+    # if: ${{ github.event.issue.pull_request && github.event.issue.comment == 'update snapshots'}}
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE so job can access it
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: debugging
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github.event.issue.pull_request }}
+          echo ${{ github.event.issue }}
+          echo ${{ github.event }}
+          echo ${{ github.event.inputs }}
+          echo ${{ github.event.inputs.branch }}
+
+      # Check out the branch the pull request is on
+      - name: Checkout tag/branch
+        run: git checkout ${{ github.event.inputs.branch }}
       # Ensure node is installed on the test runner
       - name: Install Node.js
         uses: actions/setup-node@v1
