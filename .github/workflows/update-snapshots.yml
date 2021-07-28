@@ -9,7 +9,7 @@ jobs:
   pr_commented:
     name: PR comment
     # This job will only run if the comment matches "update snapshots"
-    if: ${{ github.event.issue.pull_request && github.event.issue.comment == 'update snapshots'}}
+    # if: ${{ github.event.issue.pull_request && github.event.issue.comment == 'update snapshots'}}
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE so job can access it
