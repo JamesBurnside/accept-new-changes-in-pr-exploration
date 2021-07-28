@@ -8,39 +8,45 @@ on:
 jobs:
   pr_commented:
     name: PR comment
-    # This job will only run if the comment matches "update snapshots"
-    # if: ${{ github.event.issue.pull_request && github.event.issue.comment == 'update snapshots'}}
+    # This job will only run if the comment was on a pull requests and matches "update snapshots"
+    if: ${{ github.event.issue.pull_request && github.event.comment.body == 'update snapshots'}}
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE so job can access it
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      - name: debugging
+      # Get the branch the PR is associated to
+      - name: Get Branch
+        id: getbranch
         run: |
-          echo ${{ github.ref }}
-          echo ${{ github.event.issue.pull_request }}
-          echo ${{ github.event.issue }}
-          echo ${{ github.event }}
-          echo ${{ github.event.inputs }}
-          echo ${{ github.event.inputs.branch }}
-
-      # Check out the branch the pull request is on
+          branch=$(\
+            curl \
+              -H 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+              https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.issue.number }} \
+            | jq -r '.head.ref')
+          echo "::set-output name=branch::$branch"
+      # Hop into the PR branch
       - name: Checkout tag/branch
-        run: git checkout ${{ github.event.inputs.branch }}
+        run: git checkout ${{ steps.getbranch.outputs.branch }}
       # Ensure node is installed on the test runner
       - name: Install Node.js
         uses: actions/setup-node@v1
       # Install test run dependencies
       - name: Install dependencies
-        run: npm run install
+        run: npm install
       # Update the jest snapshots
       - name: Update snapshots
         run: npm run update-snapshots
+      # Setup bot information for pushing new changes
+      # Here we use the id from the github actions bot: https://api.github.com/users/better-informatics%5Bbot%5D 
+      - name: Setup bot git information
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
       # Commit changes to snapshot files.
       - name: Commit new snapshots
         run: |
           git add *.snap
-          git commit -m 'Updating jest snapshots
+          git commit -m 'Updating jest snapshots'
           git push
