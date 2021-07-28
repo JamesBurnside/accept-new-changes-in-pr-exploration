@@ -8,7 +8,7 @@ on:
 jobs:
   pr_commented:
     name: PR comment
-    # This job will only run if the comment was on a pull requests and matches "update snapshots"
+    # This job will only run if the comment was on a pull requests and matches the slash command
     if: ${{ github.event.issue.pull_request && github.event.comment.body == '/update-snapshots'}}
     runs-on: ubuntu-latest
     steps:
@@ -16,6 +16,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.MACHINE_ACCOUNT_PAT }}
       # Get the branch the PR is associated to
       - name: Get Branch
         id: getbranch
@@ -39,7 +40,7 @@ jobs:
       - name: Update snapshots
         run: npm run update-snapshots
       # Setup bot information for pushing new changes
-      # Here we use the id from the github actions bot: https://api.github.com/users/better-informatics%5Bbot%5D 
+      # Here we use the id from the github actions bot: https://api.github.com/users/better-informatics%5Bbot%5D
       - name: Setup bot git information
         run: |
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
