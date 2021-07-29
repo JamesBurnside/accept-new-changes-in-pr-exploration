@@ -30,4 +30,22 @@ jobs:
         run: npm run build
 
       - name: Test App
+        id: test
         run: npm run test
+  comment_suggestions:
+    name: Comment slash commnds on failure
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    if: github.event_name == 'pull_request' && needs.build_and_test.steps.test.outcome =='failure'
+    steps:
+      - name: Comment helpful slash command
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'I see the tests failed - did you know you can comment `/update-snaps` to automatically update the jest snapshots!'
+            })
