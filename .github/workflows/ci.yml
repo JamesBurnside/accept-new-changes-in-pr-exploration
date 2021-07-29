@@ -16,6 +16,8 @@ jobs:
   build_and_test:
     name: Build and Test
     runs-on: ubuntu-latest
+    outputs:
+      testResults: ${{ steps.test.outcome }}
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE so job can access it
       - uses: actions/checkout@v2
@@ -36,8 +38,13 @@ jobs:
     name: Comment slash commnds on failure
     runs-on: ubuntu-latest
     needs: build_and_test
-    if: github.event_name == 'pull_request' && needs.build_and_test.steps.test.outcome =='failure'
+    if: always()
     steps:
+      - name: debugging
+        run: |
+          echo ${{ toJSON(needs.build_and_test) }}
+          echo ${{ toJSON(needs.build_and_test.outputs) }}
+          echo ${{ toJSON(needs.build_and_test.outputs.testResults) }}
       - name: Comment helpful slash command
         uses: actions/github-script@v3
         with:
