@@ -38,7 +38,7 @@ jobs:
     name: Comment slash commnds on failure
     runs-on: ubuntu-latest
     needs: build_and_test
-    if: needs.build_and_test.outputs.testResults == 'failure'
+    if: ${{ needs.build_and_test.outputs.testResults == 'failure' }}
     steps:
       - name: Comment helpful slash command
         uses: actions/github-script@v3
